@@ -4,7 +4,6 @@ import (
 	"crawler/engine"
 	"crawler/model"
 	"regexp"
-	"strconv"
 )
 
 var ageRe = regexp.MustCompile(`<td><span class="label">年龄：</span>(\d+)岁</td>`)
@@ -24,21 +23,10 @@ func ParseProfile(contents []byte, name string) engine.ParseResult {
 	profile := model.Profile{}
 
 	profile.Name = name
-	age, err := strconv.Atoi(extractString(contents, ageRe))
-	if err != nil {
-		profile.Age = age
-	}
 
-	height, err := strconv.Atoi(extractString(contents, heightRe))
-	if err != nil {
-		profile.Height = height
-	}
-
-	weight, err := strconv.Atoi(extractString(contents, weightRe))
-	if err != nil {
-		profile.Weight = weight
-	}
-
+	profile.Weight = extractString(contents, weightRe)
+	profile.Age = extractString(contents, ageRe)
+	profile.Height = extractString(contents, heightRe)
 	profile.Income = extractString(contents, incomeRe)
 	profile.Gender = extractString(contents, genderRe)
 	profile.Car = extractString(contents, carRe)
@@ -50,7 +38,7 @@ func ParseProfile(contents []byte, name string) engine.ParseResult {
 	profile.Xinzuo = extractString(contents, xinzuoRe)
 
 	result := engine.ParseResult{
-		Items: []interface{}{profile},
+		Items: []interface{} {profile},
 	}
 
 	return result
@@ -64,4 +52,43 @@ func extractString(contents []byte, re *regexp.Regexp) string {
 	} else {
 		return ""
 	}
+}
+
+var Re = regexp.MustCompile(`<div class="m-btn purple" data-v-8b1eac0c>([^<]+)</div>`)
+
+func ParseProfile1(contents []byte, name string) engine.ParseResult {
+	profile := model.Profile{}
+
+	profile.Name = name
+
+	matches := ExtractString1(contents, Re)
+	a := make(map[int]string)
+	for i, m := range matches {
+		a[i] = string(m[1])
+	}
+
+	profile.Gender = "男"
+	profile.Age = a[1]
+	profile.Height = a[3]
+	profile.Weight = a[4]
+	profile.Income = a[6]
+	profile.Marriage = a[0]
+	profile.Education = a[8]
+	profile.Occupation = a[7]
+	profile.Hokou = "未知"
+	profile.Xinzuo = a[2]
+	profile.House = "有房"
+	profile.Car = "劳斯莱斯幻影"
+
+	result := engine.ParseResult{
+		Items: []interface{} {profile},
+	}
+
+	return result
+}
+
+func ExtractString1(contents []byte, re *regexp.Regexp) [][][]byte {
+	matches := re.FindAllSubmatch(contents, -1)
+
+	return matches
 }
