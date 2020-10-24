@@ -30,7 +30,7 @@ func main() {
 
 	e := engine.ConcurrentEngine{
 		Scheduler: &scheduler.QueuedScheduler{},
-		WorkerCount: 10,
+		WorkerCount: 100,
 		ItemChan: persist.ItemSaver(),
 	}
 	e.Run(engine.Request{
